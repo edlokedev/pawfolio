@@ -3,9 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "bun test && bun run build",
+    "check": "bun run lint && bun run format:check && bun test && bun run build",
     "dev:api": "bun --watch src/server/index.ts",
     "dev:web": "vite",
+    "format": "oxfmt src docs data/cats AGENTS.md CLAUDE.md GEMINI.md CONTEXT.md PRODUCT.md README.md components.json index.html package.json tsconfig.json vite.config.ts",
+    "format:check": "oxfmt --check src docs data/cats AGENTS.md CLAUDE.md GEMINI.md CONTEXT.md PRODUCT.md README.md components.json index.html package.json tsconfig.json vite.config.ts",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "build": "bun run typecheck && vite build",
@@ -28,6 +32,8 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
+    "oxfmt": "^0.52.0",
+    "oxlint": "^1.67.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.14"

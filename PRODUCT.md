@@ -37,4 +37,3 @@ Avoid sterile clinic UI. Avoid childish cartoon UI.
 ## Data Direction
 
 Hono backend owns JSON data. One Cat File per cat.
-

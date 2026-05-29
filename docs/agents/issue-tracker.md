@@ -8,4 +8,3 @@ Use local markdown.
 - Use `ready-for-agent` only when task is clear enough for unattended agent work.
 
 If repo later moves to GitHub/GitLab/Linear/Jira, update this file and `AGENTS.md`.
-

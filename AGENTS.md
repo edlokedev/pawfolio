@@ -22,7 +22,8 @@ Use `tdd` for implementation.
 - Red-green one vertical slice at time.
 - Test behavior through public interface, not internals.
 - Refactor only when green.
-- Run relevant tests before done.
+- After code changes, run `bun run lint`, `bun run format:check`, and relevant tests before done.
+- `bun run check` must include Oxlint and Oxfmt check.
 
 ## Context7
 
@@ -50,4 +51,3 @@ Default labels: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-huma
 ### Domain Docs
 
 Single-context repo: root `CONTEXT.md` plus `docs/adr/`. See `docs/agents/domain.md`.
-

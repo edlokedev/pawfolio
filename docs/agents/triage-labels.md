@@ -7,4 +7,3 @@ Use these role labels:
 - `ready-for-agent`: fully specified, agent can work.
 - `ready-for-human`: needs human judgment or manual work.
 - `wontfix`: will not be actioned.
-

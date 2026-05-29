@@ -61,15 +61,17 @@ VITE_DEV_API_URL=http://localhost:3001
 Data:
 
 ```text
-data/cats/luna.json
-data/cats/mochi.json
-data/cats/nori.json
+data/cats/teddy.json
+data/cats/toffee.json
+data/cats/toey.json
 data/uploads/
 ```
 
 ## Checks
 
 ```bash
+bun run lint
+bun run format:check
 bun test
 bun run build
 bun run check

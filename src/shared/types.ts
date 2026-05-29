@@ -84,6 +84,7 @@ export type HealthRecord =
 export type CatFile = {
   id: string;
   name: string;
+  sortOrder?: number;
   birthday?: string;
   placeholder: "calico" | "tabby" | "void";
   identity?: CatIdentity;

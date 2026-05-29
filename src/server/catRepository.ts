@@ -180,7 +180,7 @@ export function createCatRepository(options: {
 async function readCatFiles(dataDir: string): Promise<CatFile[]> {
   const files = await readdir(dataDir);
 
-  return Promise.all(
+  const cats = await Promise.all(
     files
       .filter((file) => file.endsWith(".json"))
       .sort()
@@ -189,12 +189,18 @@ async function readCatFiles(dataDir: string): Promise<CatFile[]> {
         return JSON.parse(json) as CatFile;
       }),
   );
+
+  return cats.sort(compareCatFileOrder);
 }
 
-async function readCatFile(
-  dataDir: string,
-  catId: string,
-): Promise<CatFile | undefined> {
+function compareCatFileOrder(a: CatFile, b: CatFile) {
+  return (
+    (a.sortOrder ?? Number.MAX_SAFE_INTEGER) - (b.sortOrder ?? Number.MAX_SAFE_INTEGER) ||
+    a.name.localeCompare(b.name)
+  );
+}
+
+async function readCatFile(dataDir: string, catId: string): Promise<CatFile | undefined> {
   if (!isSafeCatId(catId)) {
     return undefined;
   }
@@ -293,10 +299,7 @@ function firstActiveDueItem(
   };
 }
 
-function normalizeDueItemStatus(
-  item: DueItem,
-  today: string,
-): DueItemStatus {
+function normalizeDueItemStatus(item: DueItem, today: string): DueItemStatus {
   if (item.status) {
     return item.status;
   }
@@ -314,8 +317,7 @@ function ageLabel(birthday: string | undefined, today: string): string {
   let years = now.getUTCFullYear() - birth.getUTCFullYear();
   const birthdayPassed =
     now.getUTCMonth() > birth.getUTCMonth() ||
-    (now.getUTCMonth() === birth.getUTCMonth() &&
-      now.getUTCDate() >= birth.getUTCDate());
+    (now.getUTCMonth() === birth.getUTCMonth() && now.getUTCDate() >= birth.getUTCDate());
 
   if (!birthdayPassed) {
     years -= 1;
@@ -451,9 +453,7 @@ function asOptionalString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
-function parseCatProfileUpdate(
-  input: unknown,
-): ParsedCatProfileUpdate | undefined {
+function parseCatProfileUpdate(input: unknown): ParsedCatProfileUpdate | undefined {
   if (!isPlainRecord(input)) {
     return undefined;
   }
@@ -466,9 +466,7 @@ function parseCatProfileUpdate(
 
   const update: ParsedCatProfileUpdate = {
     ...(name !== undefined ? { name } : {}),
-    ...("birthday" in input
-      ? { birthday: emptyableString(input.birthday) ?? null }
-      : {}),
+    ...("birthday" in input ? { birthday: emptyableString(input.birthday) ?? null } : {}),
     ...("profilePhoto" in input
       ? { profilePhoto: input.profilePhoto as RecordPhotoInput }
       : {}),
@@ -614,12 +612,10 @@ function parseRecordPhotoInput(
   };
 }
 
-function asRecordPhotoContentType(value: unknown): RecordPhoto["contentType"] | undefined {
-  if (
-    value === "image/jpeg" ||
-    value === "image/png" ||
-    value === "image/webp"
-  ) {
+function asRecordPhotoContentType(
+  value: unknown,
+): RecordPhoto["contentType"] | undefined {
+  if (value === "image/jpeg" || value === "image/png" || value === "image/webp") {
     return value;
   }
 
@@ -634,7 +630,9 @@ function extensionForContentType(contentType: RecordPhoto["contentType"]) {
       : "webp";
 }
 
-function contentTypeFromFilename(filename: string): RecordPhoto["contentType"] | undefined {
+function contentTypeFromFilename(
+  filename: string,
+): RecordPhoto["contentType"] | undefined {
   if (filename.endsWith(".jpg")) {
     return "image/jpeg";
   }

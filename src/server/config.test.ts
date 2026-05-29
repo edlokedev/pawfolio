@@ -36,9 +36,9 @@ describe("createServerConfig", () => {
   });
 
   it("requires an owner unlock code in production", () => {
-    expect(() =>
-      createServerConfig({ NODE_ENV: "production" }, "/pawfolio"),
-    ).toThrow("OWNER_UNLOCK_CODE is required in production.");
+    expect(() => createServerConfig({ NODE_ENV: "production" }, "/pawfolio")).toThrow(
+      "OWNER_UNLOCK_CODE is required in production.",
+    );
   });
 
   it("rejects invalid ports", () => {

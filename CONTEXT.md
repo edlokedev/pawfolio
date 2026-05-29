@@ -5,6 +5,7 @@ Domain glossary only. No implementation detail.
 ## Terms
 
 - Pawfolio: Personal pet health tracking app for three cats.
+- Tracked Cats: Teddy, Toffee, and Toey.
 - Cat-Friendly Tone: Warm, cute, softly playful, and clearly cat-oriented without becoming childish or cartoon-heavy.
 - Cat: Pet whose health records are tracked in Pawfolio.
 - Cat Identity: Stable profile facts about a cat, such as name, photo, sex, age, breed, color, microchip, insurance, and vet contact.

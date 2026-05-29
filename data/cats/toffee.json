@@ -1,6 +1,7 @@
 {
-  "id": "mochi",
+  "id": "toffee",
   "name": "Toffee",
+  "sortOrder": 2,
   "birthday": "2021-05-12",
   "placeholder": "calico",
   "identity": {
@@ -10,7 +11,7 @@
   },
   "dueItems": [
     {
-      "id": "mochi-vet-2026",
+      "id": "toffee-vet-2026",
       "label": "Vet due",
       "dueDate": "2026-06-03",
       "status": "due"
@@ -18,19 +19,19 @@
   ],
   "records": [
     {
-      "id": "mochi-weight-2026-05-20",
+      "id": "toffee-weight-2026-05-20",
       "type": "weight",
       "date": "2026-05-20",
       "weightKg": 4.6
     },
     {
-      "id": "mochi-vet-2026-03-18",
+      "id": "toffee-vet-2026-03-18",
       "type": "vetVisit",
       "date": "2026-03-18",
       "reason": "Annual checkup"
     },
     {
-      "id": "mochi-med-2026-05-24",
+      "id": "toffee-med-2026-05-24",
       "type": "medication",
       "date": "2026-05-24",
       "medicine": "Sample medicine",

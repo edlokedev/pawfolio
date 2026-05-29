@@ -1,6 +1,7 @@
 {
-  "id": "luna",
+  "id": "teddy",
   "name": "Teddy",
+  "sortOrder": 1,
   "birthday": "2020-09-03",
   "placeholder": "tabby",
   "identity": {
@@ -10,7 +11,7 @@
   },
   "dueItems": [
     {
-      "id": "luna-flea-2026-05",
+      "id": "teddy-flea-2026-05",
       "label": "Flea meds soon",
       "dueDate": "2026-06-12",
       "status": "upcoming"
@@ -18,19 +19,19 @@
   ],
   "records": [
     {
-      "id": "luna-weight-2026-05-15",
+      "id": "teddy-weight-2026-05-15",
       "type": "weight",
       "date": "2026-05-15",
       "weightKg": 4.2
     },
     {
-      "id": "luna-vet-2026-02-10",
+      "id": "teddy-vet-2026-02-10",
       "type": "vetVisit",
       "date": "2026-02-10",
       "reason": "Annual checkup"
     },
     {
-      "id": "luna-vomit-2026-05-22",
+      "id": "teddy-vomit-2026-05-22",
       "type": "vomit",
       "date": "2026-05-22",
       "hairball": true,

@@ -12,4 +12,3 @@ Rules:
 - Keep `CONTEXT.md` glossary-only.
 - Put hard-to-reverse architectural decisions in ADRs.
 - Do not put implementation notes in glossary.
-

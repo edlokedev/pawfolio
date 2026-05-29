@@ -124,8 +124,7 @@ export function App() {
 
         setProfileState({
           status: "error",
-          message:
-            error instanceof Error ? error.message : "Cat profile could not load.",
+          message: error instanceof Error ? error.message : "Cat profile could not load.",
         });
       });
 
@@ -352,12 +351,7 @@ function OwnerUnlockPanel({
           <Check />
           Save
         </Button>
-        <Button
-          className="self-end"
-          onClick={onClose}
-          type="button"
-          variant="outline"
-        >
+        <Button className="self-end" onClick={onClose} type="button" variant="outline">
           <X />
           Close
         </Button>
@@ -532,7 +526,7 @@ function RecordComposer({
       return;
     }
 
-    await response.json() as AddRecordResponse;
+    (await response.json()) as AddRecordResponse;
 
     try {
       await onSaved();
@@ -996,13 +990,7 @@ function CatProfileReadyPanel({
   );
 }
 
-function IdentityFact({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | undefined;
-}) {
+function IdentityFact({ label, value }: { label: string; value: string | undefined }) {
   return (
     <div className="grid grid-cols-[72px_minmax(0,1fr)] gap-2">
       <dt className="font-bold text-muted-foreground">{label}</dt>
@@ -1160,17 +1148,11 @@ function CatProfileEditor({
           </label>
           <label className="grid gap-1 text-sm font-black text-ink">
             Breed
-            <Input
-              onChange={(event) => setBreed(event.target.value)}
-              value={breed}
-            />
+            <Input onChange={(event) => setBreed(event.target.value)} value={breed} />
           </label>
           <label className="grid gap-1 text-sm font-black text-ink">
             Color
-            <Input
-              onChange={(event) => setColor(event.target.value)}
-              value={color}
-            />
+            <Input onChange={(event) => setColor(event.target.value)} value={color} />
           </label>
           <label className="grid gap-1 text-sm font-black text-ink">
             Microchip
@@ -1245,9 +1227,7 @@ function RecordRow({ record }: { record: HealthRecord }) {
         <strong className="block text-sm font-black text-ink">
           {recordTitle(record)}
         </strong>
-        <small className="mt-1 block text-muted-foreground">
-          {recordDetail(record)}
-        </small>
+        <small className="mt-1 block text-muted-foreground">{recordDetail(record)}</small>
         {record.photos && record.photos.length > 0 && (
           <span className="mt-2 flex flex-wrap gap-2">
             {record.photos.map((photo) => (
@@ -1294,10 +1274,7 @@ function SettingsPage({
         </div>
       </div>
 
-      <SettingsPanel
-        ownerCodeSet={ownerCodeSet}
-        onOpenUnlock={onOpenUnlock}
-      />
+      <SettingsPanel ownerCodeSet={ownerCodeSet} onOpenUnlock={onOpenUnlock} />
     </section>
   );
 }
@@ -1319,7 +1296,11 @@ function SettingsPanel({
         </Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-3">
-        <SettingTile icon={<LockKeyhole size={18} />} label="Owner" value={ownerCodeSet ? "Code saved" : "Locked"} />
+        <SettingTile
+          icon={<LockKeyhole size={18} />}
+          label="Owner"
+          value={ownerCodeSet ? "Code saved" : "Locked"}
+        />
         <SettingTile icon={<NotebookText size={18} />} label="Data" value="JSON files" />
         <SettingTile icon={<Camera size={18} />} label="Photos" value="Local uploads" />
       </div>
@@ -1343,9 +1324,7 @@ function SettingTile({
       </span>
       <span>
         <strong className="block text-sm font-black text-ink">{label}</strong>
-        <small className="mt-1 block font-bold text-muted-foreground">
-          {value}
-        </small>
+        <small className="mt-1 block font-bold text-muted-foreground">{value}</small>
       </span>
     </div>
   );
@@ -1361,13 +1340,7 @@ function SkeletonGrid() {
   );
 }
 
-function CatPortrait({
-  cat,
-  size,
-}: {
-  cat: PortraitCat;
-  size: "card" | "profile";
-}) {
+function CatPortrait({ cat, size }: { cat: PortraitCat; size: "card" | "profile" }) {
   return (
     <span
       aria-hidden="true"
@@ -1523,7 +1496,7 @@ function readFileAsDataUrl(file: File) {
 
 async function readErrorMessage(response: Response) {
   try {
-    const body = await response.json() as { error?: string };
+    const body = (await response.json()) as { error?: string };
     return body.error ?? "Record could not save.";
   } catch {
     return "Record could not save.";
@@ -1542,9 +1515,7 @@ function profileSections(cat: CatFile) {
       historyFilter: "weight" as const,
       icon: Heart,
       title: "Vitals",
-      detail: weight
-        ? `Latest weight ${formatWeight(weight.weightKg)}`
-        : "No weight yet",
+      detail: weight ? `Latest weight ${formatWeight(weight.weightKg)}` : "No weight yet",
       tag: "Current",
     },
     {
@@ -1608,13 +1579,9 @@ function historyTitle(historyFilter: HistoryFilter) {
   }
 }
 
-function latestRecord<TType extends HealthRecord["type"]>(
-  cat: CatFile,
-  type: TType,
-) {
+function latestRecord<TType extends HealthRecord["type"]>(cat: CatFile, type: TType) {
   return cat.records.find(
-    (record): record is Extract<HealthRecord, { type: TType }> =>
-      record.type === type,
+    (record): record is Extract<HealthRecord, { type: TType }> => record.type === type,
   );
 }
 
@@ -1655,9 +1622,7 @@ function recordDetail(record: HealthRecord) {
     case "weight":
       return joinDetails([formatWeight(record.weightKg), record.note, photoDetail]);
     case "vetVisit":
-      return (
-        joinDetails([record.reason, record.note, photoDetail]) || "Vet visit logged"
-      );
+      return joinDetails([record.reason, record.note, photoDetail]) || "Vet visit logged";
     case "medication":
       return joinDetails([record.medicine, record.dose, record.note, photoDetail]);
     case "vomit":

@@ -108,11 +108,7 @@ describe("GET /api/cats/:id", () => {
         placeholder: "calico",
         identity: catFile.identity,
         dueItems: catFile.dueItems,
-        records: [
-          catFile.records[2],
-          catFile.records[0],
-          catFile.records[1],
-        ],
+        records: [catFile.records[2], catFile.records[0], catFile.records[1]],
       },
     });
   });
@@ -226,9 +222,9 @@ describe("POST /api/cats/:id/records", () => {
     expect(JSON.stringify(saved)).not.toContain("aGVsbG8=");
 
     const storedFilename = body.record.photos[0].url.split("/").at(-1);
-    expect(
-      await readFile(join(uploadsDir, "mochi", storedFilename), "utf8"),
-    ).toBe("hello");
+    expect(await readFile(join(uploadsDir, "mochi", storedFilename), "utf8")).toBe(
+      "hello",
+    );
   });
 
   it("serves stored Record Photos", async () => {
@@ -358,11 +354,7 @@ describe("PATCH /api/cats/:id/profile", () => {
           vetContact: "Zo Vet",
         },
         name: "Toffee",
-        records: [
-          catFile.records[2],
-          catFile.records[0],
-          catFile.records[1],
-        ],
+        records: [catFile.records[2], catFile.records[0], catFile.records[1]],
       },
     });
 
@@ -402,11 +394,7 @@ describe("PATCH /api/cats/:id/profile", () => {
         name: "Mochi",
         placeholder: "calico",
         dueItems: catFile.dueItems,
-        records: [
-          catFile.records[2],
-          catFile.records[0],
-          catFile.records[1],
-        ],
+        records: [catFile.records[2], catFile.records[0], catFile.records[1]],
       },
     });
 
@@ -454,8 +442,8 @@ describe("PATCH /api/cats/:id/profile", () => {
     expect(JSON.stringify(saved)).not.toContain("aGVsbG8=");
 
     const storedFilename = body.cat.profilePhoto.url.split("/").at(-1);
-    expect(
-      await readFile(join(uploadsDir, "mochi", storedFilename), "utf8"),
-    ).toBe("hello");
+    expect(await readFile(join(uploadsDir, "mochi", storedFilename), "utf8")).toBe(
+      "hello",
+    );
   });
 });
