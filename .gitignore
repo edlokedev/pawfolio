@@ -18,6 +18,7 @@ out/
 # Local real data
 data/local/
 data/private/
+data/uploads/
 
 # Logs
 *.log

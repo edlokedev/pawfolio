@@ -1,12 +1,16 @@
 import { createApp } from "./app";
+import { createServerConfig } from "./config";
 
-const port = Number(Bun.env.PORT ?? 3001);
-const app = createApp();
+const config = createServerConfig(Bun.env);
+const app = createApp({
+  dataDir: config.dataDir,
+  ownerUnlockCode: config.ownerUnlockCode,
+  uploadsDir: config.uploadsDir,
+});
 
 Bun.serve({
-  port,
+  port: config.port,
   fetch: app.fetch,
 });
 
-console.log(`Pawfolio API listening on http://localhost:${port}`);
-
+console.log(`Pawfolio API listening on http://localhost:${config.port}`);

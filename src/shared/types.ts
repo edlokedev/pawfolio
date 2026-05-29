@@ -16,12 +16,26 @@ export type CatIdentity = {
   vetContact?: string;
 };
 
+export type RecordPhoto = {
+  id: string;
+  filename: string;
+  contentType: "image/jpeg" | "image/png" | "image/webp";
+  url: string;
+};
+
+export type RecordPhotoInput = {
+  filename: string;
+  contentType: RecordPhoto["contentType"];
+  dataUrl: string;
+};
+
 export type WeightMeasurement = {
   id: string;
   type: "weight";
   date: string;
   weightKg: number;
   note?: string;
+  photos?: RecordPhoto[];
 };
 
 export type VetVisit = {
@@ -30,6 +44,7 @@ export type VetVisit = {
   date: string;
   reason?: string;
   note?: string;
+  photos?: RecordPhoto[];
 };
 
 export type MedicationEvent = {
@@ -39,6 +54,7 @@ export type MedicationEvent = {
   medicine: string;
   dose?: string;
   note?: string;
+  photos?: RecordPhoto[];
 };
 
 export type VomitEvent = {
@@ -47,6 +63,7 @@ export type VomitEvent = {
   date: string;
   hairball: boolean;
   note?: string;
+  photos?: RecordPhoto[];
 };
 
 export type NoteRecord = {
@@ -54,6 +71,7 @@ export type NoteRecord = {
   type: "note";
   date: string;
   note: string;
+  photos?: RecordPhoto[];
 };
 
 export type HealthRecord =
@@ -69,6 +87,7 @@ export type CatFile = {
   birthday?: string;
   placeholder: "calico" | "tabby" | "void";
   identity?: CatIdentity;
+  profilePhoto?: RecordPhoto;
   dueItems: DueItem[];
   records: HealthRecord[];
 };
@@ -78,6 +97,7 @@ export type CatCardSummary = {
   name: string;
   ageLabel: string;
   placeholder: CatFile["placeholder"];
+  profilePhoto?: RecordPhoto;
   latestWeightKg?: number;
   lastVetVisitDate?: string;
   alertChip?: {
@@ -96,12 +116,19 @@ export type CatProfileResponse = {
 };
 
 export type AddRecordInput =
-  | Omit<WeightMeasurement, "id">
-  | Omit<VetVisit, "id">
-  | Omit<MedicationEvent, "id">
-  | Omit<VomitEvent, "id">
-  | Omit<NoteRecord, "id">;
+  | (Omit<WeightMeasurement, "id" | "photos"> & { photo?: RecordPhotoInput })
+  | (Omit<VetVisit, "id" | "photos"> & { photo?: RecordPhotoInput })
+  | (Omit<MedicationEvent, "id" | "photos"> & { photo?: RecordPhotoInput })
+  | (Omit<VomitEvent, "id" | "photos"> & { photo?: RecordPhotoInput })
+  | (Omit<NoteRecord, "id" | "photos"> & { photo?: RecordPhotoInput });
 
 export type AddRecordResponse = {
   record: HealthRecord;
+};
+
+export type UpdateCatProfileInput = {
+  birthday?: string;
+  identity?: CatIdentity;
+  name?: string;
+  profilePhoto?: RecordPhotoInput;
 };

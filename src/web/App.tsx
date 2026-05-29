@@ -3,6 +3,7 @@ import {
   Activity,
   Bell,
   CalendarDays,
+  Camera,
   Check,
   ChevronRight,
   ClipboardList,
@@ -24,6 +25,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import {
+  hrefForRoute,
+  routeFromHash,
+  sectionIdForRoute,
+  type AppRoute,
+} from "./navigation";
 import type {
   AddRecordInput,
   AddRecordResponse,
@@ -32,6 +39,8 @@ import type {
   CatFile,
   CatProfileResponse,
   HealthRecord,
+  RecordPhotoInput,
+  UpdateCatProfileInput,
 } from "../shared/types";
 
 type LoadState =
@@ -46,7 +55,8 @@ type ProfileLoadState =
   | { status: "error"; message: string };
 
 type RecordType = AddRecordInput["type"];
-type PortraitCat = Pick<CatCardSummary, "id" | "placeholder">;
+type HistoryFilter = HealthRecord["type"] | "all";
+type PortraitCat = Pick<CatCardSummary, "id" | "placeholder" | "profilePhoto">;
 
 const ownerCodeStorageKey = "pawfolio-owner-code";
 
@@ -60,6 +70,7 @@ export function App() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [ownerCode, setOwnerCode] = useState(readOwnerCode);
+  const [route, setRoute] = useState(readCurrentRoute);
 
   useEffect(() => {
     let active = true;
@@ -123,6 +134,32 @@ export function App() {
     };
   }, [selectedCatId, profileVersion]);
 
+  useEffect(() => {
+    function syncRoute() {
+      setRoute(readCurrentRoute());
+    }
+
+    window.addEventListener("hashchange", syncRoute);
+    syncRoute();
+
+    return () => window.removeEventListener("hashchange", syncRoute);
+  }, []);
+
+  useEffect(() => {
+    const sectionId = sectionIdForRoute(route);
+
+    if (!sectionId) {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      document.getElementById(sectionId)?.scrollIntoView({
+        block: "start",
+        behavior: "smooth",
+      });
+    });
+  }, [loadState.status, profileState.status, route]);
+
   async function refreshCatCards() {
     const data = await fetchCatCards();
     setLoadState({ status: "ready", cats: data.cats });
@@ -154,7 +191,7 @@ export function App() {
         />
 
         <div className="grid lg:grid-cols-[236px_minmax(0,1fr)]">
-          <Sidebar dueCount={dueCount} />
+          <Sidebar dueCount={dueCount} route={route} />
 
           <div className="px-4 py-8 sm:px-8 sm:py-9 lg:px-9">
             {unlockOpen && (
@@ -165,70 +202,85 @@ export function App() {
               />
             )}
 
-            <section aria-labelledby="overview-title" className="relative">
-              <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <h2
-                    className="text-[1.9rem] font-black leading-tight tracking-normal text-ink"
-                    id="overview-title"
-                  >
-                    Overview
-                  </h2>
-                  <p className="mt-1 text-base font-medium text-muted-foreground">
-                    Health at a glance for your feline family.
-                  </p>
-                </div>
-                <Button
-                  className="h-14 w-full px-7 text-lg sm:w-auto"
-                  disabled={!selectedCat}
-                  onClick={() => setComposerOpen(true)}
-                  type="button"
-                >
-                  <Plus />
-                  Add Record
-                </Button>
-              </div>
-
-              {composerOpen && selectedCat && (
-                <RecordComposer
-                  cat={selectedCat}
-                  ownerCode={ownerCode}
-                  onCancel={() => setComposerOpen(false)}
-                  onRequestUnlock={() => setUnlockOpen(true)}
-                  onSaved={async () => {
-                    setComposerOpen(false);
-                    setProfileVersion((version) => version + 1);
-                    await refreshCatCards();
-                  }}
-                />
-              )}
-
-              {loadState.status === "loading" && <SkeletonGrid />}
-              {loadState.status === "error" && (
-                <Card className="border-rose-200 bg-rose-50 p-4 text-rose-950">
-                  {loadState.message}
-                </Card>
-              )}
-              {loadState.status === "ready" && (
-                <div className="grid gap-4 md:grid-cols-3">
-                  {cats.map((cat) => (
-                    <CatCard
-                      cat={cat}
-                      isSelected={selectedCat?.id === cat.id}
-                      key={cat.id}
-                      onSelect={() => setSelectedCatId(cat.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {loadState.status === "ready" && <DueItemsPanel cats={cats} />}
-            {selectedCat && (
-              <CatProfilePanel
-                profileState={profileState}
-                summary={selectedCat}
+            {route.view === "settings" ? (
+              <SettingsPage
+                ownerCodeSet={ownerCode.length > 0}
+                onOpenUnlock={() => setUnlockOpen(true)}
               />
+            ) : (
+              <>
+                <section aria-labelledby="overview-title" className="relative">
+                  <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h2
+                        className="text-[1.9rem] font-black leading-tight tracking-normal text-ink"
+                        id="overview-title"
+                      >
+                        Overview
+                      </h2>
+                      <p className="mt-1 text-base font-medium text-muted-foreground">
+                        Health at a glance for your feline family.
+                      </p>
+                    </div>
+                    <Button
+                      className="h-14 w-full px-7 text-lg sm:w-auto"
+                      disabled={!selectedCat}
+                      onClick={() => setComposerOpen(true)}
+                      type="button"
+                    >
+                      <Plus />
+                      Add Record
+                    </Button>
+                  </div>
+
+                  {composerOpen && selectedCat && (
+                    <RecordComposer
+                      cat={selectedCat}
+                      ownerCode={ownerCode}
+                      onCancel={() => setComposerOpen(false)}
+                      onRequestUnlock={() => setUnlockOpen(true)}
+                      onSaved={async () => {
+                        setComposerOpen(false);
+                        setProfileVersion((version) => version + 1);
+                        await refreshCatCards();
+                      }}
+                    />
+                  )}
+
+                  {loadState.status === "loading" && <SkeletonGrid />}
+                  {loadState.status === "error" && (
+                    <Card className="border-rose-200 bg-rose-50 p-4 text-rose-950">
+                      {loadState.message}
+                    </Card>
+                  )}
+                  {loadState.status === "ready" && (
+                    <div className="grid gap-4 md:grid-cols-3">
+                      {cats.map((cat) => (
+                        <CatCard
+                          cat={cat}
+                          isSelected={selectedCat?.id === cat.id}
+                          key={cat.id}
+                          onSelect={() => setSelectedCatId(cat.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                {loadState.status === "ready" && <DueItemsPanel cats={cats} />}
+                {selectedCat && (
+                  <CatProfilePanel
+                    ownerCode={ownerCode}
+                    onProfileSaved={async () => {
+                      setProfileVersion((version) => version + 1);
+                      await refreshCatCards();
+                    }}
+                    onRequestUnlock={() => setUnlockOpen(true)}
+                    profileState={profileState}
+                    summary={selectedCat}
+                  />
+                )}
+              </>
             )}
           </div>
         </div>
@@ -314,13 +366,31 @@ function OwnerUnlockPanel({
   );
 }
 
-function Sidebar({ dueCount }: { dueCount: number }) {
+function Sidebar({ dueCount, route }: { dueCount: number; route: AppRoute }) {
   const navItems = [
-    { href: "#overview-title", icon: Home, label: "Overview", active: true },
-    { href: "#profile-title", icon: ClipboardList, label: "Timeline" },
-    { href: "#due-items-title", icon: Bell, label: "Due Items", count: dueCount },
-    { href: "#settings", icon: Settings, label: "Settings" },
+    {
+      icon: Home,
+      label: "Overview",
+      route: { view: "overview", section: "overview" } satisfies AppRoute,
+    },
+    {
+      icon: ClipboardList,
+      label: "Timeline",
+      route: { view: "overview", section: "profile" } satisfies AppRoute,
+    },
+    {
+      count: dueCount,
+      icon: Bell,
+      label: "Due Items",
+      route: { view: "overview", section: "due-items" } satisfies AppRoute,
+    },
+    {
+      icon: Settings,
+      label: "Settings",
+      route: { view: "settings" } satisfies AppRoute,
+    },
   ];
+  const currentHref = hrefForRoute(route);
 
   return (
     <aside className="hidden min-h-[calc(100vh-2.5rem-92px)] border-r border-border bg-sidebar px-5 py-9 lg:block">
@@ -333,12 +403,13 @@ function Sidebar({ dueCount }: { dueCount: number }) {
               asChild
               className={cn(
                 "h-12 justify-start px-3",
-                item.active && "bg-accent text-accent-foreground",
+                hrefForRoute(item.route) === currentHref &&
+                  "bg-accent text-accent-foreground",
               )}
               key={item.label}
               variant="nav"
             >
-              <a href={item.href}>
+              <a href={hrefForRoute(item.route)}>
                 <Icon />
                 {item.label}
                 {(item.count ?? 0) > 0 && (
@@ -376,9 +447,23 @@ function RecordComposer({
   const [medicine, setMedicine] = useState("");
   const [dose, setDose] = useState("");
   const [hairball, setHairball] = useState(true);
+  const [photoFile, setPhotoFile] = useState<File | undefined>();
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | undefined>();
   const [saveState, setSaveState] = useState<
     { status: "idle" } | { status: "saving" } | { status: "error"; message: string }
   >({ status: "idle" });
+
+  useEffect(() => {
+    if (!photoFile) {
+      setPhotoPreviewUrl(undefined);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(photoFile);
+    setPhotoPreviewUrl(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [photoFile]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -390,12 +475,23 @@ function RecordComposer({
       return;
     }
 
+    const photo = await toRecordPhotoInput(photoFile);
+
+    if (photoFile && !photo) {
+      setSaveState({
+        status: "error",
+        message: "Photo must be JPG, PNG, or WebP under 8 MB.",
+      });
+      return;
+    }
+
     const payload = buildAddRecordInput({
       date,
       dose,
       hairball,
       medicine,
       note,
+      photo,
       reason,
       type,
       weightKg,
@@ -465,7 +561,7 @@ function RecordComposer({
           <label className="grid gap-1 text-sm font-black text-ink">
             Type
             <select
-              className="h-11 rounded-lg border border-input bg-background px-3 text-sm font-medium text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"
+              className="h-11 cursor-pointer rounded-lg border border-input bg-background px-3 text-sm font-medium text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring"
               onChange={(event) => setType(event.target.value as RecordType)}
               value={type}
             >
@@ -538,10 +634,10 @@ function RecordComposer({
         )}
 
         {type === "vomit" && (
-          <label className="flex min-h-11 items-center gap-3 text-sm font-black text-ink">
+          <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-black text-ink">
             <input
               checked={hairball}
-              className="size-4 accent-primary"
+              className="size-4 cursor-pointer accent-primary"
               onChange={(event) => setHairball(event.target.checked)}
               type="checkbox"
             />
@@ -561,6 +657,29 @@ function RecordComposer({
             required={type === "note"}
             value={note}
           />
+        </label>
+
+        <label className="grid gap-2 text-sm font-black text-ink">
+          Photo
+          <div className="grid gap-3 rounded-lg border border-dashed border-border bg-background/70 p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <Input
+              accept="image/*"
+              className="cursor-pointer"
+              onChange={(event) => setPhotoFile(event.target.files?.[0])}
+              type="file"
+            />
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground">
+              <Camera size={16} />
+              Camera or gallery
+            </span>
+            {photoPreviewUrl && (
+              <img
+                alt=""
+                className="h-24 w-24 rounded-lg border border-border object-cover"
+                src={photoPreviewUrl}
+              />
+            )}
+          </div>
         </label>
 
         {saveState.status === "error" && (
@@ -592,7 +711,7 @@ function CatCard({
   return (
     <button
       className={cn(
-        "group grid min-h-[330px] grid-rows-[auto_auto_1fr] gap-4 rounded-lg border border-border bg-card-gradient p-4 text-left text-card-foreground shadow-[0_14px_34px_oklch(51%_0.07_42_/_0.08)] transition-all duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring",
+        "group grid min-h-[330px] cursor-pointer grid-rows-[auto_auto_1fr] gap-4 rounded-lg border border-border bg-card-gradient p-4 text-left text-card-foreground shadow-[0_14px_34px_oklch(51%_0.07_42_/_0.08)] transition-all duration-200 ease-out hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring",
         isSelected &&
           "border-primary shadow-[0_18px_42px_oklch(57%_0.13_38_/_0.16),inset_0_0_0_1px_oklch(70%_0.14_38_/_0.4)]",
       )}
@@ -693,9 +812,15 @@ function DueItemsPanel({ cats }: { cats: CatCardSummary[] }) {
 }
 
 function CatProfilePanel({
+  ownerCode,
+  onProfileSaved,
+  onRequestUnlock,
   profileState,
   summary,
 }: {
+  ownerCode: string;
+  onProfileSaved: () => Promise<void>;
+  onRequestUnlock: () => void;
   profileState: ProfileLoadState;
   summary: CatCardSummary;
 }) {
@@ -715,8 +840,49 @@ function CatProfilePanel({
     );
   }
 
-  const cat = profileState.cat;
+  return (
+    <CatProfileReadyPanel
+      cat={profileState.cat}
+      ownerCode={ownerCode}
+      onProfileSaved={onProfileSaved}
+      onRequestUnlock={onRequestUnlock}
+    />
+  );
+}
+
+function CatProfileReadyPanel({
+  cat,
+  ownerCode,
+  onProfileSaved,
+  onRequestUnlock,
+}: {
+  cat: CatFile;
+  ownerCode: string;
+  onProfileSaved: () => Promise<void>;
+  onRequestUnlock: () => void;
+}) {
+  const [editOpen, setEditOpen] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<HistoryFilter>("all");
   const sections = profileSections(cat);
+  const filteredRecords =
+    historyFilter === "all"
+      ? cat.records
+      : cat.records.filter((record) => record.type === historyFilter);
+  const activeHistoryTitle = historyTitle(historyFilter);
+
+  useEffect(() => {
+    setHistoryFilter("all");
+    setEditOpen(false);
+  }, [cat.id]);
+
+  function selectHistory(nextFilter: HistoryFilter) {
+    setHistoryFilter(nextFilter);
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById("profile-history")
+        ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+  }
 
   return (
     <Card className="mt-6 overflow-hidden">
@@ -742,6 +908,22 @@ function CatProfilePanel({
               <IdentityFact label="Breed" value={cat.identity?.breed} />
               <IdentityFact label="Color" value={cat.identity?.color} />
             </dl>
+            <Button
+              className="mt-5"
+              onClick={() => {
+                if (!ownerCode.trim()) {
+                  onRequestUnlock();
+                  return;
+                }
+
+                setEditOpen((isOpen) => !isOpen);
+              }}
+              type="button"
+              variant="outline"
+            >
+              <LockKeyhole />
+              {ownerCode.trim() ? "Edit Profile" : "Unlock to edit"}
+            </Button>
           </div>
         </div>
 
@@ -750,9 +932,15 @@ function CatProfilePanel({
             const Icon = section.icon;
 
             return (
-              <div
-                className="grid min-h-16 grid-cols-[32px_minmax(0,1fr)_auto_18px] items-center gap-3 border-b border-border last:border-b-0 max-[560px]:grid-cols-[32px_minmax(0,1fr)_18px]"
+              <button
+                aria-pressed={historyFilter === section.historyFilter}
+                className={cn(
+                  "grid min-h-16 cursor-pointer grid-cols-[32px_minmax(0,1fr)_auto_18px] items-center gap-3 border-b border-border text-left transition-colors last:border-b-0 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring max-[560px]:grid-cols-[32px_minmax(0,1fr)_18px]",
+                  historyFilter === section.historyFilter && "bg-accent/50",
+                )}
                 key={section.title}
+                onClick={() => selectHistory(section.historyFilter)}
+                type="button"
               >
                 <span className="grid size-8 place-items-center rounded-lg bg-muted text-brand">
                   <Icon size={18} />
@@ -772,21 +960,34 @@ function CatProfilePanel({
                   {section.tag}
                 </Badge>
                 <ChevronRight className="text-muted-foreground" size={17} />
-              </div>
+              </button>
             );
           })}
         </div>
       </section>
 
-      <div className="border-t border-border p-4 sm:p-5">
+      {editOpen && (
+        <CatProfileEditor
+          cat={cat}
+          ownerCode={ownerCode}
+          onCancel={() => setEditOpen(false)}
+          onRequestUnlock={onRequestUnlock}
+          onSaved={async () => {
+            setEditOpen(false);
+            await onProfileSaved();
+          }}
+        />
+      )}
+
+      <div className="border-t border-border p-4 sm:p-5" id="profile-history">
         <div className="mb-2 flex items-center justify-between gap-3">
-          <h3 className="text-base font-black text-ink">Timeline</h3>
+          <h3 className="text-base font-black text-ink">{activeHistoryTitle}</h3>
           <span className="text-sm font-bold text-muted-foreground">
-            {cat.records.length} records
+            {filteredRecords.length} records
           </span>
         </div>
         <ol className="grid">
-          {cat.records.slice(0, 8).map((record) => (
+          {filteredRecords.slice(0, 8).map((record) => (
             <RecordRow key={record.id} record={record} />
           ))}
         </ol>
@@ -810,6 +1011,228 @@ function IdentityFact({
   );
 }
 
+function CatProfileEditor({
+  cat,
+  ownerCode,
+  onCancel,
+  onRequestUnlock,
+  onSaved,
+}: {
+  cat: CatFile;
+  ownerCode: string;
+  onCancel: () => void;
+  onRequestUnlock: () => void;
+  onSaved: () => Promise<void>;
+}) {
+  const [birthday, setBirthday] = useState(cat.birthday ?? "");
+  const [breed, setBreed] = useState(cat.identity?.breed ?? "");
+  const [color, setColor] = useState(cat.identity?.color ?? "");
+  const [insurance, setInsurance] = useState(cat.identity?.insurance ?? "");
+  const [microchip, setMicrochip] = useState(cat.identity?.microchip ?? "");
+  const [name, setName] = useState(cat.name);
+  const [photoFile, setPhotoFile] = useState<File | undefined>();
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | undefined>();
+  const [sex, setSex] = useState(cat.identity?.sex ?? "");
+  const [vetContact, setVetContact] = useState(cat.identity?.vetContact ?? "");
+  const [saveState, setSaveState] = useState<
+    { status: "idle" } | { status: "saving" } | { status: "error"; message: string }
+  >({ status: "idle" });
+
+  useEffect(() => {
+    if (!photoFile) {
+      setPhotoPreviewUrl(undefined);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(photoFile);
+    setPhotoPreviewUrl(previewUrl);
+
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [photoFile]);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaveState({ status: "idle" });
+
+    if (!ownerCode.trim()) {
+      setSaveState({ status: "error", message: "Owner unlock code needed." });
+      onRequestUnlock();
+      return;
+    }
+
+    const profilePhoto = await toRecordPhotoInput(photoFile);
+
+    if (photoFile && !profilePhoto) {
+      setSaveState({
+        status: "error",
+        message: "Photo must be JPG, PNG, or WebP under 8 MB.",
+      });
+      return;
+    }
+
+    const payload: UpdateCatProfileInput = {
+      birthday,
+      identity: {
+        breed,
+        color,
+        insurance,
+        microchip,
+        sex,
+        vetContact,
+      },
+      name,
+      ...(profilePhoto ? { profilePhoto } : {}),
+    };
+
+    setSaveState({ status: "saving" });
+
+    let response: Response;
+
+    try {
+      response = await fetch(`/api/cats/${cat.id}/profile`, {
+        body: JSON.stringify(payload),
+        headers: {
+          "Content-Type": "application/json",
+          "x-owner-unlock-code": ownerCode,
+        },
+        method: "PATCH",
+      });
+    } catch {
+      setSaveState({ status: "error", message: "Profile could not save." });
+      return;
+    }
+
+    if (response.status === 401) {
+      setSaveState({ status: "error", message: "Owner unlock code rejected." });
+      onRequestUnlock();
+      return;
+    }
+
+    if (!response.ok) {
+      const error = await readErrorMessage(response);
+      setSaveState({ status: "error", message: error });
+      return;
+    }
+
+    try {
+      await onSaved();
+    } catch {
+      setSaveState({ status: "error", message: "Profile saved. Refresh failed." });
+    }
+  }
+
+  return (
+    <div className="border-t border-border bg-accent/20 p-4 sm:p-5">
+      <form className="grid gap-4" onSubmit={handleSubmit}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-normal text-brand">
+              Protected Record Change
+            </p>
+            <h3 className="text-lg font-black text-ink">Edit {cat.name}</h3>
+          </div>
+          <Button onClick={onCancel} type="button" variant="outline">
+            <X />
+            Close
+          </Button>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Name
+            <Input
+              onChange={(event) => setName(event.target.value)}
+              required
+              value={name}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Birthday
+            <Input
+              onChange={(event) => setBirthday(event.target.value)}
+              type="date"
+              value={birthday}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Sex
+            <Input onChange={(event) => setSex(event.target.value)} value={sex} />
+          </label>
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Breed
+            <Input
+              onChange={(event) => setBreed(event.target.value)}
+              value={breed}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Color
+            <Input
+              onChange={(event) => setColor(event.target.value)}
+              value={color}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Microchip
+            <Input
+              onChange={(event) => setMicrochip(event.target.value)}
+              value={microchip}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Insurance
+            <Input
+              onChange={(event) => setInsurance(event.target.value)}
+              value={insurance}
+            />
+          </label>
+          <label className="grid gap-1 text-sm font-black text-ink">
+            Vet contact
+            <Input
+              onChange={(event) => setVetContact(event.target.value)}
+              value={vetContact}
+            />
+          </label>
+        </div>
+
+        <label className="grid gap-2 text-sm font-black text-ink">
+          Profile photo
+          <div className="grid gap-3 rounded-lg border border-dashed border-border bg-background/70 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center">
+            <Input
+              accept="image/*"
+              className="cursor-pointer"
+              onChange={(event) => setPhotoFile(event.target.files?.[0])}
+              type="file"
+            />
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground">
+              <Camera size={16} />
+              Camera or gallery
+            </span>
+            <img
+              alt=""
+              className="h-24 w-24 rounded-lg border border-border object-cover"
+              src={photoPreviewUrl ?? cat.profilePhoto?.url ?? `/cats/${cat.id}.png`}
+            />
+          </div>
+        </label>
+
+        {saveState.status === "error" && (
+          <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm font-bold text-rose-950">
+            {saveState.message}
+          </p>
+        )}
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <Button disabled={saveState.status === "saving"} type="submit">
+            <Check />
+            {saveState.status === "saving" ? "Saving" : "Save Profile"}
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function RecordRow({ record }: { record: HealthRecord }) {
   const Icon = recordIcon(record);
 
@@ -825,6 +1248,18 @@ function RecordRow({ record }: { record: HealthRecord }) {
         <small className="mt-1 block text-muted-foreground">
           {recordDetail(record)}
         </small>
+        {record.photos && record.photos.length > 0 && (
+          <span className="mt-2 flex flex-wrap gap-2">
+            {record.photos.map((photo) => (
+              <img
+                alt=""
+                className="size-16 rounded-lg border border-border object-cover"
+                key={photo.id}
+                src={photo.url}
+              />
+            ))}
+          </span>
+        )}
       </span>
       <time
         className="text-sm font-black text-ink max-[560px]:col-start-2"
@@ -833,6 +1268,86 @@ function RecordRow({ record }: { record: HealthRecord }) {
         {formatDate(record.date)}
       </time>
     </li>
+  );
+}
+
+function SettingsPage({
+  ownerCodeSet,
+  onOpenUnlock,
+}: {
+  ownerCodeSet: boolean;
+  onOpenUnlock: () => void;
+}) {
+  return (
+    <section aria-labelledby="settings-title" className="grid gap-6">
+      <div>
+        <div>
+          <h2
+            className="text-[1.9rem] font-black leading-tight tracking-normal text-ink"
+            id="settings-title"
+          >
+            Settings
+          </h2>
+          <p className="mt-1 text-base font-medium text-muted-foreground">
+            Owner access, local JSON data, and photo storage.
+          </p>
+        </div>
+      </div>
+
+      <SettingsPanel
+        ownerCodeSet={ownerCodeSet}
+        onOpenUnlock={onOpenUnlock}
+      />
+    </section>
+  );
+}
+
+function SettingsPanel({
+  ownerCodeSet,
+  onOpenUnlock,
+}: {
+  ownerCodeSet: boolean;
+  onOpenUnlock: () => void;
+}) {
+  return (
+    <Card className="mt-6 p-4" id="settings">
+      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-base font-black text-ink">Access & Storage</h2>
+        <Button onClick={onOpenUnlock} type="button" variant="outline">
+          <LockKeyhole />
+          {ownerCodeSet ? "Update code" : "Owner unlock"}
+        </Button>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <SettingTile icon={<LockKeyhole size={18} />} label="Owner" value={ownerCodeSet ? "Code saved" : "Locked"} />
+        <SettingTile icon={<NotebookText size={18} />} label="Data" value="JSON files" />
+        <SettingTile icon={<Camera size={18} />} label="Photos" value="Local uploads" />
+      </div>
+    </Card>
+  );
+}
+
+function SettingTile({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="grid min-h-20 grid-cols-[36px_minmax(0,1fr)] items-center gap-3 rounded-lg border border-border bg-card-gradient p-3">
+      <span className="grid size-9 place-items-center rounded-lg bg-muted text-brand">
+        {icon}
+      </span>
+      <span>
+        <strong className="block text-sm font-black text-ink">{label}</strong>
+        <small className="mt-1 block font-bold text-muted-foreground">
+          {value}
+        </small>
+      </span>
+    </div>
   );
 }
 
@@ -865,7 +1380,7 @@ function CatPortrait({
       <img
         alt=""
         className="h-full w-full object-cover"
-        src={`/cats/${cat.id}.png`}
+        src={cat.profilePhoto?.url ?? `/cats/${cat.id}.png`}
       />
     </span>
   );
@@ -897,6 +1412,7 @@ function buildAddRecordInput(input: {
   hairball: boolean;
   medicine: string;
   note: string;
+  photo: RecordPhotoInput | undefined;
   reason: string;
   type: RecordType;
   weightKg: string;
@@ -918,6 +1434,7 @@ function buildAddRecordInput(input: {
 
       return {
         date,
+        ...(input.photo ? { photo: input.photo } : {}),
         type: "weight",
         weightKg,
         ...(note ? { note } : {}),
@@ -928,6 +1445,7 @@ function buildAddRecordInput(input: {
 
       return {
         date,
+        ...(input.photo ? { photo: input.photo } : {}),
         type: "vetVisit",
         ...(reason ? { reason } : {}),
         ...(note ? { note } : {}),
@@ -944,6 +1462,7 @@ function buildAddRecordInput(input: {
       return {
         date,
         medicine,
+        ...(input.photo ? { photo: input.photo } : {}),
         type: "medication",
         ...(dose ? { dose } : {}),
         ...(note ? { note } : {}),
@@ -953,6 +1472,7 @@ function buildAddRecordInput(input: {
       return {
         date,
         hairball: input.hairball,
+        ...(input.photo ? { photo: input.photo } : {}),
         type: "vomit",
         ...(note ? { note } : {}),
       };
@@ -964,9 +1484,41 @@ function buildAddRecordInput(input: {
       return {
         date,
         note,
+        ...(input.photo ? { photo: input.photo } : {}),
         type: "note",
       };
   }
+}
+
+async function toRecordPhotoInput(
+  file: File | undefined,
+): Promise<RecordPhotoInput | undefined> {
+  if (!file) {
+    return undefined;
+  }
+
+  if (
+    !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
+    file.size > 8 * 1024 * 1024
+  ) {
+    return undefined;
+  }
+
+  return {
+    contentType: file.type as RecordPhotoInput["contentType"],
+    dataUrl: await readFileAsDataUrl(file),
+    filename: file.name,
+  };
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.addEventListener("error", () => reject(reader.error));
+    reader.addEventListener("load", () => resolve(String(reader.result)));
+    reader.readAsDataURL(file);
+  });
 }
 
 async function readErrorMessage(response: Response) {
@@ -987,6 +1539,7 @@ function profileSections(cat: CatFile) {
 
   return [
     {
+      historyFilter: "weight" as const,
       icon: Heart,
       title: "Vitals",
       detail: weight
@@ -995,6 +1548,7 @@ function profileSections(cat: CatFile) {
       tag: "Current",
     },
     {
+      historyFilter: "vetVisit" as const,
       icon: Stethoscope,
       title: "Vet Visits",
       detail: vetVisit
@@ -1003,6 +1557,7 @@ function profileSections(cat: CatFile) {
       tag: "Tracked",
     },
     {
+      historyFilter: "medication" as const,
       icon: Pill,
       title: "Medication Log",
       detail: medication
@@ -1011,6 +1566,7 @@ function profileSections(cat: CatFile) {
       tag: "Private",
     },
     {
+      historyFilter: "vomit" as const,
       icon: Activity,
       title: "Vomit Events",
       detail: vomit
@@ -1019,18 +1575,37 @@ function profileSections(cat: CatFile) {
       tag: "Hairball",
     },
     {
+      historyFilter: "note" as const,
       icon: NotebookText,
       title: "Notes",
       detail: note ? note.note : "No notes yet",
       tag: "Care",
     },
     {
+      historyFilter: "all" as const,
       icon: CalendarDays,
       title: "Timeline",
       detail: "All health records by date",
       tag: `${cat.records.length} total`,
     },
   ];
+}
+
+function historyTitle(historyFilter: HistoryFilter) {
+  switch (historyFilter) {
+    case "weight":
+      return "Vitals History";
+    case "vetVisit":
+      return "Vet Visit History";
+    case "medication":
+      return "Medication History";
+    case "vomit":
+      return "Vomit History";
+    case "note":
+      return "Notes History";
+    case "all":
+      return "Timeline";
+  }
 }
 
 function latestRecord<TType extends HealthRecord["type"]>(
@@ -1074,20 +1649,25 @@ function recordTitle(record: HealthRecord) {
 }
 
 function recordDetail(record: HealthRecord) {
+  const photoDetail = record.photos?.length ? "Photo attached" : undefined;
+
   switch (record.type) {
     case "weight":
-      return joinDetails([formatWeight(record.weightKg), record.note]);
+      return joinDetails([formatWeight(record.weightKg), record.note, photoDetail]);
     case "vetVisit":
-      return joinDetails([record.reason, record.note]) || "Vet visit logged";
+      return (
+        joinDetails([record.reason, record.note, photoDetail]) || "Vet visit logged"
+      );
     case "medication":
-      return joinDetails([record.medicine, record.dose, record.note]);
+      return joinDetails([record.medicine, record.dose, record.note, photoDetail]);
     case "vomit":
       return joinDetails([
         record.hairball ? "Hairball" : "Not hairball",
         record.note,
+        photoDetail,
       ]);
     case "note":
-      return record.note;
+      return joinDetails([record.note, photoDetail]);
   }
 }
 
@@ -1121,4 +1701,8 @@ function todayInputValue() {
 
 function readOwnerCode() {
   return window.sessionStorage.getItem(ownerCodeStorageKey) ?? "";
+}
+
+function readCurrentRoute() {
+  return routeFromHash(window.location.hash);
 }

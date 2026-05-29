@@ -23,11 +23,13 @@ Domain glossary only. No implementation detail.
 - Alert Chip: Subtle Cat Card indicator for overdue or important care items.
 - Due Item: Manually tracked care item with a date, shown when due or overdue.
 - Cat Profile: Full detail view for one cat, including health records and history.
+- Cat Profile Edit: Protected Record Change for updating Cat Identity or the cat's profile photo.
 - Vitals: Cat Profile section for measurements such as weight.
 - Timeline: Chronological list of a cat's Health Records.
 - Medication Log: Cat Profile area for tracking medicine given over time.
 - Vomit Event: Health record showing a cat vomited.
 - Hairball: Vomit Event cause/type when vomit is hair-related.
 - Note: Freeform health or care detail attached to a cat or health record.
+- Record Photo: Image attached to a Health Record.
 - Protected Record Change: Adding, editing, or deleting Pawfolio data, allowed only after account or unlock check.
 - Owner Unlock Code: Shared secret used to allow Protected Record Changes.

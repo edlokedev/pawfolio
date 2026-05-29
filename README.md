@@ -10,6 +10,12 @@ Install deps:
 bun install
 ```
 
+Copy config:
+
+```bash
+cp .env.example .env
+```
+
 Start API:
 
 ```bash
@@ -40,7 +46,17 @@ Owner unlock:
 OWNER_UNLOCK_CODE=pawfolio bun run dev:api
 ```
 
-If unset, dev default is `pawfolio`.
+If unset, dev default is `pawfolio`. Production requires `OWNER_UNLOCK_CODE`.
+
+Config:
+
+```text
+PORT=3001
+OWNER_UNLOCK_CODE=pawfolio
+PAWFOLIO_DATA_DIR=data/cats
+PAWFOLIO_UPLOADS_DIR=data/uploads
+VITE_DEV_API_URL=http://localhost:3001
+```
 
 Data:
 
@@ -48,6 +64,7 @@ Data:
 data/cats/luna.json
 data/cats/mochi.json
 data/cats/nori.json
+data/uploads/
 ```
 
 ## Checks
@@ -55,6 +72,7 @@ data/cats/nori.json
 ```bash
 bun test
 bun run build
+bun run check
 ```
 
 ## Agent Docs

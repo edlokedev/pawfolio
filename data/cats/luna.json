@@ -4,9 +4,9 @@
   "birthday": "2020-09-03",
   "placeholder": "tabby",
   "identity": {
-    "sex": "female",
-    "breed": "Domestic shorthair",
-    "color": "Brown tabby"
+    "breed": "Domestic Shorthair",
+    "color": "Orange Brown Tabby",
+    "sex": "Male"
   },
   "dueItems": [
     {

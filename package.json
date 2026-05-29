@@ -3,10 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check": "bun test && bun run build",
     "dev:api": "bun --watch src/server/index.ts",
-    "dev:web": "vite --host 0.0.0.0",
+    "dev:web": "vite",
     "test": "bun test",
-    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "build": "bun run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
