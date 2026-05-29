@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-ink: var(--ink);
+  --color-sidebar: var(--sidebar);
+  --color-sage: var(--sage);
+  --color-sage-foreground: var(--sage-foreground);
+  --color-card-gradient: var(--card-gradient);
+  --color-profile-panel: var(--profile-panel);
+}
+
+:root {
+  --background: oklch(95.5% 0.024 70);
+  --foreground: oklch(24% 0.042 43);
+  --card: oklch(98.5% 0.013 76);
+  --card-foreground: oklch(24% 0.042 43);
+  --popover: oklch(98.5% 0.013 76);
+  --popover-foreground: oklch(24% 0.042 43);
+  --primary: oklch(68% 0.16 38);
+  --primary-foreground: oklch(99% 0.012 72);
+  --secondary: oklch(94% 0.034 58);
+  --secondary-foreground: oklch(29% 0.05 42);
+  --muted: oklch(94% 0.038 76);
+  --muted-foreground: oklch(48% 0.045 43);
+  --accent: oklch(91% 0.064 45);
+  --accent-foreground: oklch(45% 0.13 37);
+  --border: oklch(86% 0.034 54);
+  --input: oklch(86% 0.034 54);
+  --ring: oklch(73% 0.14 75 / 0.62);
+  --brand: oklch(49% 0.08 46);
+  --ink: oklch(24% 0.066 38);
+  --sidebar: oklch(95% 0.031 66);
+  --sage: oklch(92% 0.042 127);
+  --sage-foreground: oklch(39% 0.055 130);
+  --card-gradient: oklch(98% 0.014 74);
+  --profile-panel: oklch(96% 0.032 62);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 5% 12%, oklch(86% 0.06 128 / 0.3), transparent 21rem),
+    radial-gradient(circle at 90% 4%, oklch(86% 0.11 40 / 0.3), transparent 24rem),
+    linear-gradient(135deg, oklch(97.5% 0.018 76), oklch(92% 0.04 52));
+  color: var(--foreground);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+img {
+  display: block;
+}

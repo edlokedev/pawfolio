@@ -15,6 +15,10 @@ out/
 .env.*
 !.env.example
 
+# Local real data
+data/local/
+data/private/
+
 # Logs
 *.log
 npm-debug.log*
@@ -34,4 +38,3 @@ coverage/
 .turbo/
 .pytest_cache/
 __pycache__/
-

@@ -1,0 +1,39 @@
+{
+  "id": "nori",
+  "name": "Toey",
+  "birthday": "2019-11-28",
+  "placeholder": "void",
+  "identity": {
+    "sex": "male",
+    "breed": "Domestic shorthair",
+    "color": "Black"
+  },
+  "dueItems": [
+    {
+      "id": "nori-weight-check",
+      "label": "Weight check",
+      "dueDate": "2026-05-26",
+      "status": "overdue"
+    }
+  ],
+  "records": [
+    {
+      "id": "nori-weight-2026-04-29",
+      "type": "weight",
+      "date": "2026-04-29",
+      "weightKg": 5.1
+    },
+    {
+      "id": "nori-vet-2026-01-08",
+      "type": "vetVisit",
+      "date": "2026-01-08",
+      "reason": "Dental check"
+    },
+    {
+      "id": "nori-note-2026-05-18",
+      "type": "note",
+      "date": "2026-05-18",
+      "note": "Eating slower than usual."
+    }
+  ]
+}

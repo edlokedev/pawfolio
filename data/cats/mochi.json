@@ -1,0 +1,40 @@
+{
+  "id": "mochi",
+  "name": "Toffee",
+  "birthday": "2021-05-12",
+  "placeholder": "calico",
+  "identity": {
+    "sex": "female",
+    "breed": "Domestic shorthair",
+    "color": "Calico"
+  },
+  "dueItems": [
+    {
+      "id": "mochi-vet-2026",
+      "label": "Vet due",
+      "dueDate": "2026-06-03",
+      "status": "due"
+    }
+  ],
+  "records": [
+    {
+      "id": "mochi-weight-2026-05-20",
+      "type": "weight",
+      "date": "2026-05-20",
+      "weightKg": 4.6
+    },
+    {
+      "id": "mochi-vet-2026-03-18",
+      "type": "vetVisit",
+      "date": "2026-03-18",
+      "reason": "Annual checkup"
+    },
+    {
+      "id": "mochi-med-2026-05-24",
+      "type": "medication",
+      "date": "2026-05-24",
+      "medicine": "Sample medicine",
+      "dose": "1 tablet"
+    }
+  ]
+}
