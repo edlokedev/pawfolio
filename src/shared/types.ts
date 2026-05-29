@@ -91,3 +91,17 @@ export type CatCardsResponse = {
   cats: CatCardSummary[];
 };
 
+export type CatProfileResponse = {
+  cat: CatFile;
+};
+
+export type AddRecordInput =
+  | Omit<WeightMeasurement, "id">
+  | Omit<VetVisit, "id">
+  | Omit<MedicationEvent, "id">
+  | Omit<VomitEvent, "id">
+  | Omit<NoteRecord, "id">;
+
+export type AddRecordResponse = {
+  record: HealthRecord;
+};

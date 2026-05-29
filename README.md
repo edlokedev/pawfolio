@@ -34,6 +34,22 @@ API:
 http://localhost:3001/api/cats
 ```
 
+Owner unlock:
+
+```bash
+OWNER_UNLOCK_CODE=pawfolio bun run dev:api
+```
+
+If unset, dev default is `pawfolio`.
+
+Data:
+
+```text
+data/cats/luna.json
+data/cats/mochi.json
+data/cats/nori.json
+```
+
 ## Checks
 
 ```bash
