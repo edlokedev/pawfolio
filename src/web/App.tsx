@@ -19,7 +19,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import type { CatCardSummary, CatCardsResponse } from "../shared/types";
 
@@ -72,43 +71,31 @@ export function App() {
 
   return (
     <main className="min-h-screen px-3 py-3 text-foreground sm:px-5 sm:py-5">
-      <div className="mx-auto grid min-h-[calc(100vh-1.5rem)] w-full max-w-[1180px] overflow-hidden rounded-lg border border-border bg-card shadow-[0_24px_80px_oklch(47%_0.08_42_/_0.17)] sm:min-h-[calc(100vh-2.5rem)] lg:grid-cols-[236px_minmax(0,1fr)]">
-        <Sidebar />
+      <div className="mx-auto min-h-[calc(100vh-1.5rem)] w-full max-w-[1180px] overflow-hidden rounded-lg border border-border bg-card shadow-[0_24px_80px_oklch(47%_0.08_42_/_0.17)] sm:min-h-[calc(100vh-2.5rem)]">
+        <AppHeader />
 
-        <div className="px-4 py-5 sm:px-6 sm:py-7 lg:px-7">
-          <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="mb-1 text-xs font-black uppercase tracking-normal text-brand">
-                Three cats, one health trail
-              </p>
-              <h1 className="text-[2.05rem] font-black leading-none tracking-normal text-ink sm:text-[2.45rem]">
-                Pawfolio
-              </h1>
-            </div>
-            <Button className="w-full sm:w-auto" type="button" variant="outline">
-              <LockKeyhole />
-              Owner unlock
-            </Button>
-          </header>
+        <div className="grid lg:grid-cols-[236px_minmax(0,1fr)]">
+          <Sidebar />
 
-          <section aria-labelledby="overview-title" className="relative">
-            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="mb-1 text-xs font-black uppercase tracking-normal text-brand">
-                  Overview
-                </p>
-                <h2
-                  className="text-[1.45rem] font-black leading-tight tracking-normal text-ink sm:text-[1.65rem]"
-                  id="overview-title"
-                >
-                  Health at a glance
-                </h2>
+          <div className="px-4 py-8 sm:px-8 sm:py-9 lg:px-9">
+            <section aria-labelledby="overview-title" className="relative">
+              <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <h2
+                    className="text-[1.9rem] font-black leading-tight tracking-normal text-ink"
+                    id="overview-title"
+                  >
+                    Overview
+                  </h2>
+                  <p className="mt-1 text-base font-medium text-muted-foreground">
+                    Health at a glance for your feline family.
+                  </p>
+                </div>
+                <Button className="h-14 w-full px-7 text-lg sm:w-auto" type="button">
+                  <Plus />
+                  Add Record
+                </Button>
               </div>
-              <Button className="w-full sm:w-auto" type="button">
-                <Plus />
-                Add Record
-              </Button>
-            </div>
 
             {loadState.status === "loading" && <SkeletonGrid />}
             {loadState.status === "error" && (
@@ -128,13 +115,29 @@ export function App() {
                 ))}
               </div>
             )}
-          </section>
+            </section>
 
-          {loadState.status === "ready" && <DueItemsPanel cats={cats} />}
-          {selectedCat && <ProfilePreview cat={selectedCat} />}
+            {loadState.status === "ready" && <DueItemsPanel cats={cats} />}
+            {selectedCat && <ProfilePreview cat={selectedCat} />}
+          </div>
         </div>
       </div>
     </main>
+  );
+}
+
+function AppHeader() {
+  return (
+    <header className="flex min-h-[92px] items-center justify-between gap-4 border-b border-border bg-card/95 px-5 sm:px-9 lg:px-12">
+      <div className="flex items-center gap-3 text-[2rem] font-black leading-none tracking-normal text-ink">
+        <PawPrint className="text-primary" size={34} strokeWidth={2.8} />
+        <h1>Pawfolio</h1>
+      </div>
+      <Button className="h-12 px-5" type="button" variant="outline">
+        <LockKeyhole />
+        Owner unlock
+      </Button>
+    </header>
   );
 }
 
@@ -147,15 +150,8 @@ function Sidebar() {
   ];
 
   return (
-    <aside className="hidden border-r border-border bg-sidebar p-5 lg:block">
-      <div className="mb-9 flex items-center gap-3 text-[1.55rem] font-black tracking-normal text-ink">
-        <span className="grid size-10 place-items-center rounded-lg bg-primary text-primary-foreground shadow-[0_10px_24px_oklch(62%_0.13_39_/_0.22)]">
-          <PawPrint size={22} strokeWidth={2.4} />
-        </span>
-        Pawfolio
-      </div>
-
-      <nav className="grid gap-2" aria-label="Main navigation">
+    <aside className="hidden min-h-[calc(100vh-2.5rem-92px)] border-r border-border bg-sidebar px-5 py-9 lg:block">
+      <nav className="grid gap-3" aria-label="Main navigation">
         {navItems.map((item) => {
           const Icon = item.icon;
 
